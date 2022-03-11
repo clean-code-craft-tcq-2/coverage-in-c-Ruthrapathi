@@ -1,47 +1,66 @@
-#include <stdio.h>
-
-typedef enum {
-  PASSIVE_COOLING,
-  HI_ACTIVE_COOLING,
-  MED_ACTIVE_COOLING
-} CoolingType;
-
-typedef enum {
-  NORMAL,
-  TOO_LOW,
-  TOO_HIGH,
-  BREACH_TYPE_LENGTH
-} BreachType;
-
-typedef enum {
-  TO_CONTROLLER,
-  TO_EMAIL,
-  ALERT_TARGET_LENGTH
-} AlertTarget;
-
-typedef struct {
-  CoolingType coolingType;
-  char brand[48];
-} BatteryCharacter;
-
-const char Breachinfo[BREACH_TYPE_LENGTH][10] = {"Normal","Too Low","Too High"};
-
-typedef AlertTarget (*actionList) (BreachType breachType);
-
-int  passiveCoolingUpperLimit(CoolingType coolingType, int upperLimit);
-int  passiveCoolingLowerLimit(CoolingType coolingType, int lowerLimit);
-int  hiActiveCoolingUpperLimit(CoolingType coolingType, int upperLimit);
-int  hiActiveCoolingLowerLimit(CoolingType coolingType, int lowerLimit);
-int  medActiveCoolingUpperLimit(CoolingType coolingType, int upperLimit);
-int  medActiveCoolingLowerLimit(CoolingType coolingType, int lowerLimit);
-BreachType checkLowerLimit(double value, double lowerLimit);
-BreachType checkUpperLimit(double value, double upperLimit);
-BreachType inferBreach(double value, double lowerLimit, double upperLimit);
-BreachType classifyTemperatureBreach(CoolingType coolingType, double temperatureInC);
-AlertTarget checkAndAlert(AlertTarget alertTarget, BatteryCharacter batteryChar, double temperatureInC, actionList *alertAction ); 
-AlertTarget sendToController(BreachType breachType);
-AlertTarget sendToEmail(BreachType breachType);
-AlertTarget  printAlert(char* alertInfo, AlertTarget target);
+#include "TempCheckAndAlert.h"
 
 
+BreachType inferBreach(double value, double lowerLimit, double upperLimit) 
+{
+  BreachType lowerBreachResult = checkLowerLimit( value,  lowerLimit);
+  BreachType upperBreachResult = checkUpperLimit( value,  upperLimit);
+  
+  return (BreachType)((int)lowerBreachResult + (int)upperBreachResult);
+ 
+}
 
+BreachType classifyTemperatureBreach(
+  CoolingType coolingType, double temperatureInC) {
+ 
+  int lowerLimit = 0;
+  int upperLimit = 0;
+
+ upperLimit = passiveCoolingUpperLimit( coolingType,  upperLimit);
+ lowerLimit = passiveCoolingLowerLimit( coolingType,  lowerLimit);
+ upperLimit = hiActiveCoolingUpperLimit( coolingType,  upperLimit);
+ lowerLimit = hiActiveCoolingLowerLimit( coolingType,  lowerLimit);
+ upperLimit = medActiveCoolingUpperLimit( coolingType,  upperLimit);
+ lowerLimit = medActiveCoolingLowerLimit( coolingType,  lowerLimit);
+  
+  return inferBreach(temperatureInC, lowerLimit, upperLimit);
+}
+
+AlertTarget checkAndAlert(
+    AlertTarget alertTarget, BatteryCharacter batteryChar, double temperatureInC, actionList *alertAction ) 
+{
+  
+	 BreachType breachType = classifyTemperatureBreach(
+		batteryChar.coolingType, temperatureInC
+	  );
+
+	 return  (*alertAction[alertTarget])(breachType);
+	  
+ }
+ 
+AlertTarget  printAlert(char* alertInfo, AlertTarget target)
+ {
+     puts(alertInfo);
+     return target;
+ }
+
+
+AlertTarget sendToController(BreachType breachType) 
+{    	 const unsigned short header = 0xfeed;
+	 char alertInfo[100];
+	 sprintf(alertInfo ,"%x : %x\n", header, breachType);
+	 AlertTarget result =  printAlert(alertInfo, TO_CONTROLLER );
+	 return result;
+}
+
+AlertTarget sendToEmail(BreachType breachType) {
+	AlertTarget target = TO_EMAIL;
+if(breachType != NORMAL)
+{
+  const char* recepient = "a.b@c.com";
+  char alertInfo[100];
+  sprintf(alertInfo, "To: %s\n Hi,The Temperature is %s \n", recepient ,Breachinfo[breachType] );
+  return printAlert(alertInfo, TO_EMAIL );
+}
+	return target;
+}
