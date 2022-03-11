@@ -20,6 +20,7 @@ TEST_CASE("Extracts Passive cooling Lowet limit")
   REQUIRE(passiveCoolingLowerLimit(MED_ACTIVE_COOLING, 14) == 14); 
 }
 
+
 TEST_CASE("Extracts High Active cooling Upper limit") 
 {
   REQUIRE(hiActiveCoolingUpperLimit(PASSIVE_COOLING, 12) == 12);
@@ -34,6 +35,7 @@ TEST_CASE("Extracts High Active cooling Lowet limit")
   REQUIRE(hiActiveCoolingLowerLimit(HI_ACTIVE_COOLING, 44) == 0);
   REQUIRE(hiActiveCoolingLowerLimit(MED_ACTIVE_COOLING, 4) == 4);  
 }
+
 
 TEST_CASE("Extracts Medium Active cooling Upper limit") 
 {
@@ -57,11 +59,13 @@ TEST_CASE("Check the lower limit breach for a value")
   REQUIRE(checkLowerLimit(-1, 0) == TOO_LOW);    
 }
 
+
 TEST_CASE("Check the Higher limit breach for a value")
 {
   REQUIRE(checkUpperLimit(10, 35) == NORMAL);
   REQUIRE(checkUpperLimit(50, 45) == TOO_HIGH);    
 }
+
 
 TEST_CASE("infers the breach according to limits") 
 {
@@ -70,12 +74,14 @@ TEST_CASE("infers the breach according to limits")
   REQUIRE(inferBreach(32, 20, 30) == TOO_HIGH);  
 }
 
+
 TEST_CASE("Given Temperature is classified based on the Breach limits")
 {
   REQUIRE(classifyTemperatureBreach(PASSIVE_COOLING, 41) == TOO_HIGH);
   REQUIRE(classifyTemperatureBreach(HI_ACTIVE_COOLING, 12) == NORMAL);
   REQUIRE(classifyTemperatureBreach(MED_ACTIVE_COOLING, -1) == TOO_LOW); 
 }
+
 
 TEST_CASE("Checks for temperature Breach and alert")
 {	
@@ -89,11 +95,13 @@ TEST_CASE("Checks for temperature Breach and alert")
  REQUIRE(checkAndAlert(TO_EMAIL,batteryChar4, -1,fpArrayOfActions) == TO_EMAIL);	
 }
 
+
 TEST_CASE("Prints the given string and returns the function caller ID")
 {
   const char* str = "To: @Ruthrapathi \n The temperature is Too Low";
   REQUIRE(printAlert("To: @Ruthrapathi \n The temperature is Too Low",TO_CONTROLLER) == TO_CONTROLLER);  
 }
+
 
 TEST_CASE("Sending the Breach information to Controller")
 {
@@ -101,9 +109,9 @@ TEST_CASE("Sending the Breach information to Controller")
     REQUIRE(sendToController(NORMAL) == TO_CONTROLLER);
 }
 
+
 TEST_CASE("Sending the Breach information to EMAIL")
 {
-  
   REQUIRE(sendToEmail(TOO_LOW) == TO_EMAIL);
   REQUIRE(sendToEmail(NORMAL) == TO_EMAIL);
 }
