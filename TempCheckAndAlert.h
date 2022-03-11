@@ -1,25 +1,29 @@
 #include <stdio.h>
 
-typedef enum {
+typedef enum
+{
   PASSIVE_COOLING,
   HI_ACTIVE_COOLING,
   MED_ACTIVE_COOLING
 } CoolingType;
 
-typedef enum {
+typedef enum 
+{
   NORMAL,
   TOO_LOW,
   TOO_HIGH,
   BREACH_TYPE_LENGTH
 } BreachType;
 
-typedef enum {
+typedef enum 
+{
   TO_CONTROLLER,
   TO_EMAIL,
   ALERT_TARGET_LENGTH
 } AlertTarget;
 
-typedef struct {
+typedef struct 
+{
   CoolingType coolingType;
   char brand[48];
 } BatteryCharacter;
@@ -42,5 +46,3 @@ AlertTarget checkAndAlert(AlertTarget alertTarget, BatteryCharacter batteryChar,
 AlertTarget sendToController(BreachType breachType);
 AlertTarget sendToEmail(BreachType breachType);
 AlertTarget  printAlert(char* alertInfo, AlertTarget target);
-
-
